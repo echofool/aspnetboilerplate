@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Web.Http.Controllers;
 using Abp.WebApi.Controllers.Dynamic.Builders;
 
@@ -40,8 +43,42 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
                     return new DyanamicHttpActionDescriptor(controllerContext.ControllerDescriptor, controllerInfo.Actions[actionName].Method, controllerInfo.Actions[actionName].Filters);
                 }
             }
-            
+
             return base.SelectAction(controllerContext);
         }
+
+        #region Overrides of ApiControllerActionSelector
+
+        /// <summary>
+        /// Gets the action mappings for the <see cref="T:System.Web.Http.Controllers.ApiControllerActionSelector"/>.
+        /// </summary>
+        /// <returns>
+        /// The action mappings.
+        /// </returns>
+        /// <param name="controllerDescriptor">The information that describes a controller.</param>
+        public override ILookup<string, HttpActionDescriptor> GetActionMapping(HttpControllerDescriptor controllerDescriptor)
+        {
+            var dynamicHttpControllerDescriptor = controllerDescriptor as DynamicHttpControllerDescriptor;
+            if (dynamicHttpControllerDescriptor != null)
+            {
+                var dynamicApiControllerInfo =
+                    DynamicApiControllerManager.FindOrNull(dynamicHttpControllerDescriptor.ControllerName);
+                if (dynamicApiControllerInfo == null)
+                {
+                    //TODO:echfoool ,I don't konw what message to throw.
+                    throw new AbpException("");
+                }
+                var dyanamicHttpActionDescriptors = new List<HttpActionDescriptor>();
+                foreach (var dynamicApiActionInfo in dynamicApiControllerInfo.Actions)
+                {
+                    dyanamicHttpActionDescriptors.Add(new DyanamicHttpActionDescriptor(dynamicHttpControllerDescriptor,
+                        dynamicApiActionInfo.Value.Method, dynamicApiActionInfo.Value.Filters));
+                }
+                return dyanamicHttpActionDescriptors.ToLookup(discriptor => discriptor.ActionName);
+            }
+            return base.GetActionMapping(controllerDescriptor);
+        }
+
+        #endregion
     }
 }

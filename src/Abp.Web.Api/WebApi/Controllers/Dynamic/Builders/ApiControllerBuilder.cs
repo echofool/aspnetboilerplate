@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Abp.Dependency;
 using Abp.Logging;
 using Abp.WebApi.Controllers.Dynamic.Interceptors;
@@ -87,13 +88,15 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
         public void Build()
         {
             var controllerInfo = new DynamicApiControllerInfo(_serviceName, typeof(DynamicApiController<T>), _filters);
-            
+
+            Debug.WriteLine(_serviceName, "_serviceName");
             foreach (var actionBuilder in _actionBuilders.Values)
             {
                 if (actionBuilder.DontCreate)
                 {
                     continue;
                 }
+                Debug.WriteLine(actionBuilder.ActionName, "ActionName");
 
                 controllerInfo.Actions[actionBuilder.ActionName] = actionBuilder.BuildActionInfo();
             }

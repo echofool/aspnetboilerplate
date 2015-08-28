@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Web.Http.Controllers;
 using System.Collections.ObjectModel;
+using System.Net.Http;
 using System.Web.Http.Filters;
 using Abp.Collections.Extensions;
 using Abp.Extensions;
@@ -21,8 +22,24 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
         {
             get
             {
+                return GetReturnType();
+            }
+        }
+
+        private Type GetReturnType()
+        {
+            var originType = this.MethodInfo.ReturnType;
+            if (originType == typeof(AjaxResponse) ||
+                (originType.IsGenericType && originType.GetGenericTypeDefinition() == typeof(AjaxResponse<>)) ||
+                originType == typeof(HttpResponseMessage))
+            {
+                return originType;
+            }
+            if (originType == typeof(void))
+            {
                 return typeof(AjaxResponse);
             }
+            return typeof(AjaxResponse<>).MakeGenericType(originType);
         }
 
         public DyanamicHttpActionDescriptor(HttpControllerDescriptor controllerDescriptor, MethodInfo methodInfo, IFilter[] filters = null)
@@ -39,17 +56,19 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
                 {
                     try
                     {
-                        if (task.Result == null)
-                        {
-                            return new AjaxResponse();
-                        }
-
-                        if (task.Result is AjaxResponse)
+                        var originType = this.MethodInfo.ReturnType;
+                        if (originType == typeof(AjaxResponse) ||
+    (originType.IsGenericType && originType.GetGenericTypeDefinition() == typeof(AjaxResponse<>)) ||
+    originType == typeof(HttpResponseMessage))
                         {
                             return task.Result;
                         }
-                        
-                        return new AjaxResponse(task.Result);
+                        if (originType == typeof(void))
+                        {
+                            return new AjaxResponse();
+                        }
+                        var returnType = typeof(AjaxResponse<>).MakeGenericType(originType);
+                        return Activator.CreateInstance(returnType, task.Result);
                     }
                     catch (AggregateException ex)
                     {

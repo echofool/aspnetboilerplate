@@ -11,6 +11,7 @@ using Abp.WebApi.Controllers.Dynamic;
 using Abp.WebApi.Controllers.Dynamic.Formatters;
 using Abp.WebApi.Controllers.Dynamic.Selectors;
 using Abp.WebApi.Controllers.Filters;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
 namespace Abp.WebApi
@@ -55,10 +56,12 @@ namespace Abp.WebApi
 
         private void InitializeFormatters(HttpConfiguration httpConfiguration)
         {
-            httpConfiguration.Formatters.Clear();
-            var formatter = new JsonMediaTypeFormatter();
-            formatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            httpConfiguration.Formatters.Add(formatter);
+            //httpConfiguration.Formatters.Clear();
+            //var formatter = new JsonMediaTypeFormatter();
+            //formatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            //httpConfiguration.Formatters.Add(formatter);
+            httpConfiguration.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            httpConfiguration.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true, AllowIntegerValues = true });
             httpConfiguration.Formatters.Add(new PlainTextFormatter());
         }
 

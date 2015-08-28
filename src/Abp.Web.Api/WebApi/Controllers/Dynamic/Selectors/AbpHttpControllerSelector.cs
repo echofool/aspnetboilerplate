@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -55,5 +58,30 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
 
             return base.SelectController(request);
         }
+
+        #region Overrides of DefaultHttpControllerSelector
+
+        /// <summary>
+        /// Returns a map, keyed by controller string, of all <see cref="T:System.Web.Http.Controllers.HttpControllerDescriptor"/> that the selector can select. 
+        /// </summary>
+        /// <returns>
+        /// A map of all <see cref="T:System.Web.Http.Controllers.HttpControllerDescriptor"/> that the selector can select, or null if the selector does not have a well-defined mapping of <see cref="T:System.Web.Http.Controllers.HttpControllerDescriptor"/>.
+        /// </returns>
+        public override IDictionary<string, HttpControllerDescriptor> GetControllerMapping()
+        {
+            var dic = base.GetControllerMapping();
+            var dynamicControllers = DynamicApiControllerManager.GetAll();
+            Debug.Assert(dynamicControllers!=null);
+            Debug.WriteLine(dynamicControllers.Count, "DynamicApiControllerManager.GetAll().Count");
+            foreach (var controllerInfo in dynamicControllers)
+            {
+                dic.Add(controllerInfo.ServiceName, new DynamicHttpControllerDescriptor(_configuration, controllerInfo.ServiceName,
+                            controllerInfo.Type,
+                            controllerInfo.Filters));
+            }
+            return dic;
+        }
+
+        #endregion
     }
 }

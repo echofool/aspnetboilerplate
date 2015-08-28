@@ -6,7 +6,7 @@ using Abp.WebApi.Controllers.Dynamic.Clients;
 
 namespace Abp.Web.Api.Tests
 {
-    [DependsOn(typeof(AbpWebApiModule))]
+    [DependsOn(typeof(SimpleTaskSystemDataModule), typeof(SimpleTaskSystemWebApiModule))]
     public class AbpWebApiTestModule : AbpModule
     {
         public override void PreInitialize()
