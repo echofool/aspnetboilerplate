@@ -2,6 +2,7 @@
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Web.Http.Filters;
 using Abp.Collections.Extensions;
 
@@ -53,5 +54,27 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
 
             return actionFilters;
         }
+
+        #region Overrides of HttpControllerDescriptor
+
+        /// <summary>
+        /// Returns a collection of attributes that can be assigned to &lt;typeparamref name="T" /&gt; for this descriptor's controller. 
+        /// </summary>
+        /// <returns>
+        /// A collection of attributes associated with this controller.
+        /// </returns>
+        /// <param name="inherit">true to search this controller's inheritance chain to find the attributes; otherwise, false.</param><typeparam name="T">Used to filter the collection of attributes. Use a value of <see cref="T:System.Object"/> to retrieve all attributes.</typeparam>
+        public override Collection<T> GetCustomAttributes<T>(bool inherit)
+        {
+            var attributes = base.GetCustomAttributes<T>(inherit);
+            Debug.WriteLine(attributes.Count, "GetCustomAttributes<" + typeof(T).FullName + ">(" + inherit + ")");
+            foreach (var attribute in attributes)
+            {
+                Debug.WriteLine(attribute.GetType().FullName, "attribute.GetType().FullName");
+            }
+            return attributes;
+        }
+
+        #endregion
     }
 }

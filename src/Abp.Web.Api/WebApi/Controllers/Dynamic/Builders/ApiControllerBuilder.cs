@@ -100,7 +100,6 @@ namespace Abp.WebApi.Controllers.Dynamic.Builders
 
                 controllerInfo.Actions[actionBuilder.ActionName] = actionBuilder.BuildActionInfo();
             }
-
             IocManager.Instance.IocContainer.Register(
                 Component.For<AbpDynamicApiControllerInterceptor<T>>().LifestyleTransient(),
                 Component.For<DynamicApiController<T>>().Proxy.AdditionalInterfaces(new[] { typeof(T) }).Interceptors<AbpDynamicApiControllerInterceptor<T>>().LifestyleTransient()

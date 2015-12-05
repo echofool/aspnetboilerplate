@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Web.Http.Controllers;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Web.Http.Filters;
 using Abp.Collections.Extensions;
@@ -68,7 +69,9 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
                             return new AjaxResponse();
                         }
                         var returnType = typeof(AjaxResponse<>).MakeGenericType(originType);
-                        return Activator.CreateInstance(returnType, task.Result);
+                        var instance = Activator.CreateInstance(returnType);
+                        returnType.GetProperty("Result").SetValue(instance, task.Result);
+                        return instance;
                     }
                     catch (AggregateException ex)
                     {
@@ -100,5 +103,27 @@ namespace Abp.WebApi.Controllers.Dynamic.Selectors
             }
             return actionFilters;
         }
+
+        #region Overrides of ReflectedHttpActionDescriptor
+
+        /// <summary>
+        /// Returns an array of custom attributes defined for this member, identified by type.
+        /// </summary>
+        /// <returns>
+        /// An array of custom attributes or an empty array if no custom attributes exist.
+        /// </returns>
+        /// <param name="inherit">true to search this action's inheritance chain to find the attributes; otherwise, false.</param><typeparam name="T">The type of the custom attributes.</typeparam>
+        public override Collection<T> GetCustomAttributes<T>(bool inherit)
+        {
+            var attributes = base.GetCustomAttributes<T>(inherit);
+            Debug.WriteLine(attributes.Count, "GetCustomAttributes<" + typeof(T).FullName + ">(" + inherit + ")");
+            foreach (var attribute in attributes)
+            {
+                Debug.WriteLine(attribute.GetType().FullName, "attribute.GetType().FullName");
+            }
+            return attributes;
+        }
+
+        #endregion
     }
 }

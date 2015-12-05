@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Abp.WebApi.Controllers.Dynamic.Builders
 {
-    internal static class DynamicApiServiceNameHelper
+    public static class DynamicApiServiceNameHelper
     {
         private static readonly Regex ServiceNameRegex = new Regex(@"^([a-zA-Z_][a-zA-Z0-9_]*)(\/([a-zA-Z_][a-zA-Z0-9_]*))+$");
         private static readonly Regex ServiceNameWithActionRegex = new Regex(@"^([a-zA-Z_][a-zA-Z0-9_]*)(\/([a-zA-Z_][a-zA-Z0-9_]*)){2,}$");
