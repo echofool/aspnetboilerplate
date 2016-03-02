@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
+using Abp.Application.Features;
 using Abp.Application.Navigation;
 using Abp.Authorization;
 using Abp.Configuration.Startup;
 using Abp.Dependency;
 using Abp.Localization;
+using Castle.MicroKernel.Registration;
 using NSubstitute;
 
 namespace Abp.Tests.Application.Navigation
@@ -42,8 +44,14 @@ namespace Abp.Tests.Application.Navigation
             NavigationManager = new NavigationManager(_iocManager, configuration);
             NavigationManager.Initialize();
 
+            _iocManager.IocContainer.Register(
+                Component.For<IFeatureDependencyContext, FeatureDependencyContext>()
+                    .UsingFactoryMethod(
+                        () => new FeatureDependencyContext(_iocManager, Substitute.For<IFeatureChecker>()))
+                );
+            
             //Create user navigation manager to test
-            UserNavigationManager = new UserNavigationManager(NavigationManager)
+            UserNavigationManager = new UserNavigationManager(NavigationManager, Substitute.For<ILocalizationContext>(), _iocManager)
                                     {
                                         PermissionChecker = CreateMockPermissionChecker()
                                     };
